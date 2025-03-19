@@ -1,6 +1,7 @@
 from pydub import AudioSegment
 import noisereduce as nr
 import numpy as np
+from moviepy import VideoFileClip
 
 def preprocessar_audio(arquivo_entrada, arquivo_saida, sample_rate=16000):
     # Carregar o arquivo de áudio
@@ -33,3 +34,8 @@ def reduzirRuido(arquivo_entrada):
     reduced_audio += 50
 
     reduced_audio.export(arquivo_entrada, format="wav")
+
+
+def gerar_audio_wav(input_file, output_file):
+    video = VideoFileClip(input_file)
+    video.audio.write_audiofile(output_file)

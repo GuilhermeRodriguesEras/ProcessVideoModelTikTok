@@ -1,7 +1,8 @@
 from vosk import Model, KaldiRecognizer
-from preprocess import preprocessar_audio
+from preprocess import preprocessar_audio, gerar_audio_wav
 import json
 import wave
+import os
 
 def segundos_para_tempo(segundos):
     horas = int(segundos // 3600)
@@ -10,16 +11,17 @@ def segundos_para_tempo(segundos):
     milissegundos = int((segundos - int(segundos)) * 1000)
     return f"{horas:02}:{minutos:02}:{segundos:02},{milissegundos:03}"
 
-def transcrever_audio_vosk(arquivoEntrada, arquivo_srt):
+def transcrever_video_vosk(arquivoEntrada, arquivo_srt):
     modelo_vosk = "vosk-model-small-pt-0.3"
     model = Model(modelo_vosk)
 
-    preprocessar_audio(arquivoEntrada, "audios/audioModificado.wav")
+    gerar_audio_wav(arquivoEntrada, "audios/audio.wav")
+    preprocessar_audio("audios/audio.wav", "audios/audioModificado.wav")
 
     with wave.open("audios/audioModificado.wav", "rb") as wf:
         recognizer_vosk = KaldiRecognizer(model, wf.getframerate())
         recognizer_vosk.SetWords(True) 
-        
+
         legendas = []
         index = 1
         tempo_inicio = None
@@ -52,7 +54,8 @@ def transcrever_audio_vosk(arquivoEntrada, arquivo_srt):
                 f.write(f"{segundos_para_tempo(start)} --> {segundos_para_tempo(end)}\n")
                 f.write(f"{text}\n\n")
 
-        print("Legendas salvas em:", arquivo_srt)
 
-
-transcrever_audio_vosk("audios/discurso.wav", "legendas.srt")
+def gerar_legendas_srt(video):
+    transcrever_video_vosk(video, "legendas.srt")
+    os.remove("audios/audio.wav")
+    os.remove("audios/audioModificado.wav")
